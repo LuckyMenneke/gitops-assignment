@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: my-app-dev
+  name: my-app-main
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/LuckyMenneke/gitops-assignment.git
-    targetRevision: dev
-    path: k8s/overlays/dev
+    targetRevision: main
+    path: k8s/overlays/main
   destination:
     server: https://kubernetes.default.svc
     namespace: default
