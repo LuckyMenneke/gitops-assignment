@@ -1,0 +1,64 @@
+name: Build and Push
+on:
+  push:
+    branches: [ dev, qa, main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=sha,format=long
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Update Kubernetes Manifest
+      run: |
+        # Set email/name for commit
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+
+        # Determine which overlay to update based on branch
+        BRANCH_NAME=${{ github.ref_name }}
+        OVERLAY_DIR="k8s/overlays/$BRANCH_NAME"
+
+        # Update the image tag in the kustomization.yaml using kustomize edit or sed
+        # Here we use sed to inject the new image into the specific kustomization file
+        # This is a GitOps pattern: CI updates the config repo
+
+        NEW_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+
+        cd $OVERLAY_DIR
+        kustomize edit set image ghcr.io/${{ github.repository }}=$NEW_IMAGE
+
+        git add kustomization.yaml
+        git commit -m "Update image for $BRANCH_NAME to $NEW_IMAGE"
+        git push origin HEAD:$BRANCH_NAME
