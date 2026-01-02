@@ -1,3 +1,9 @@
 resources:
 - ../../base
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 nameSuffix: -prod
+images:
+- name: ghcr.io/LuckyMenneke/gitops-assignment
+  newName: ghcr.io/LuckyMenneke/gitops-assignment
+  newTag: sha-881857d793ada43708973a0c08cc181dfa7aa028
