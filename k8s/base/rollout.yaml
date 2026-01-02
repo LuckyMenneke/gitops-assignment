@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: my-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-app
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {duration: 10s} # Automates the rollout for this assignment
+      - setWeight: 50
+      - pause: {duration: 10s}
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: ghcr.io/LuckyMenneke/gitops-assignment:latest
+        ports:
+        - containerPort: 3000
