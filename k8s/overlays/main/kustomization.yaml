@@ -5,5 +5,5 @@ kind: Kustomization
 nameSuffix: -prod
 images:
 - name: ghcr.io/LuckyMenneke/gitops-assignment
-  newName: ghcr.io/LuckyMenneke/gitops-assignment
-  newTag: sha-881857d793ada43708973a0c08cc181dfa7aa028
+  newName: ghcr.io/luckymenneke/gitops-assignment
+  newTag: sha-e3c687d9b7795ebc4b4aa9e2f1a7d9e46b99c434
